@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#ff4f73">
+<title>MediDose — Medical Dose Calculator</title>
+<style>
+/* Translation disabled */
+:root{
+ --bg:#fbfbfc;--card:#fff;--text:#213244;--muted:#738294;
+ --pink:#ff4f73;--pink-soft:#fff0f3;--pink-line:#ffc0cd;
+ --blue:#2575e8;--line:#e3e8ee;--success:#159b48;--success-bg:#f2fbf5;
+ --danger:#d54b55;--danger-bg:#fff3f4;--shadow:0 7px 24px rgba(40,55,75,.07);
+ --radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%);
+ font-family:Arial,Tahoma,sans-serif;color:var(--text);
+ -webkit-tap-highlight-color:transparent;
+}
+.app{max-width:760px;margin:auto;padding:0 14px 30px}
+.hero{
+ background:#fff;border-radius:0;padding:15px 2px 13px;color:var(--text);
+ box-shadow:0 1px 0 #edf0f3;position:relative;overflow:visible;min-height:0;
+}
+.hero:before,.hero:after{display:none}
+.hero-content{position:relative;z-index:2;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand-row{display:flex;align-items:center;gap:12px;flex:1}
+.brand-icon{
+ width:43px;height:43px;border-radius:14px;background:var(--pink-soft);
+ display:grid;place-items:center;font-size:23px;color:var(--pink);
+ box-shadow:none;
+}
+h1{margin:0 0 2px;font-size:27px;letter-spacing:-.4px;color:#21364a}
+.hero p{margin:0;opacity:.75;font-size:12px}
+.medical-badge{display:none}
+.instagram-link{
+ display:inline-flex;align-items:center;gap:7px;margin:0;color:#263748;text-decoration:none;
+ font-size:12px;font-weight:700;background:transparent;border:0;padding:7px 0;border-radius:0;
+ box-shadow:none;transition:.2s;
+}
+.instagram-link:hover{color:var(--pink);transform:none}
+.instagram-icon{
+ width:22px;height:22px;border:2px solid #667382;border-radius:7px;
+ display:grid;place-items:center;font-size:16px;line-height:1;
+}
+.instagram-arrow{display:none}
+.card{
+ background:var(--card);border:1px solid #edf0f3;border-radius:var(--radius);
+ padding:17px;margin-top:13px;box-shadow:var(--shadow);animation:none;
+}
+.section-title{
+ font-size:16px;font-weight:800;margin:0 0 13px;display:flex;align-items:center;gap:9px;
+}
+.section-title::first-letter{font-size:18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:14px;color:#24374a;margin:0 0 7px;font-weight:800}
+input,select{
+ width:100%;height:52px;border:1px solid #e1e6ec;background:#fff;border-radius:15px;
+ padding:12px 14px;font-size:16px;color:#24374a;outline:none;transition:.2s;
+}
+input:focus,select:focus{
+ border-color:#ff9bb0;background:#fff;box-shadow:0 0 0 3px rgba(255,79,115,.08);
+}
+.tabs{
+ display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#f7f8fa;
+ padding:4px;border-radius:18px;margin-bottom:15px;
+}
+.tab{
+ border:0;background:transparent;border-radius:14px;padding:11px;font-weight:800;
+ color:#5f6d7b;cursor:pointer;transition:.2s;position:relative;font-size:15px;
+}
+.tab.active{background:#fff;color:#26384b;box-shadow:0 3px 10px rgba(30,50,70,.06)}
+.patient-tabs.child-mode{background:#fff5f7;box-shadow:inset 0 0 0 1px #ffd6df}
+.patient-tabs.adult-mode{background:#f5f7f9;box-shadow:inset 0 0 0 1px #e5e9ed}
+.patient-tabs.child-mode #childBtn.active{color:var(--pink);box-shadow:0 4px 12px rgba(255,79,115,.10)}
+.patient-tabs.adult-mode #adultBtn.active{color:#5f7180;box-shadow:0 4px 12px rgba(80,100,120,.08)}
+.patient-tabs.child-mode #childBtn.active:after,
+.patient-tabs.adult-mode #adultBtn.active:after{
+ content:"";position:absolute;left:18%;right:18%;bottom:3px;height:3px;border-radius:3px;
+}
+.patient-tabs.child-mode #childBtn.active:after{background:var(--pink)}
+.patient-tabs.adult-mode #adultBtn.active:after{background:#8fa0ad}
+.hidden{display:none}
+.hint{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.55}
+.drug-picker{position:relative}
+.drug-category-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#f6f7f9;padding:4px;border-radius:15px;margin-bottom:9px}
+.drug-cat{border:0;background:transparent;border-radius:11px;padding:9px 8px;font-weight:800;font-size:13px;color:#6b7684;cursor:pointer}
+.drug-cat.active{background:#fff;color:var(--pink);box-shadow:0 2px 8px rgba(30,50,70,.07)}
+.drug-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:245px;overflow:auto;padding:2px}
+.drug-option{border:1px solid #e4e8ed;background:#fff;border-radius:12px;padding:10px 9px;text-align:right;font-size:13px;font-weight:700;color:#2d3d4e;cursor:pointer;transition:.15s}
+.drug-option:hover{border-color:#ffafbf;background:#fff7f8}
+.drug-option.selected{border-color:#ff7e98;background:#fff0f3;color:#c63d5b;box-shadow:0 0 0 2px rgba(255,79,115,.08)}
+body.dark-mode .drug-category-tabs{background:#151821}
+body.dark-mode .drug-cat.active{background:#1b1e28;color:#ff8da4}
+body.dark-mode .drug-option{background:#151821;border-color:#343949;color:#eef1f7}
+body.dark-mode .drug-option:hover,body.dark-mode .drug-option.selected{background:#27202a;border-color:#ff718d}
+@media(max-width:520px){.drug-list{grid-template-columns:1fr;max-height:230px}}
+
+button.calculate{
+ width:100%;height:57px;border:0;border-radius:15px;padding:13px;margin-top:16px;
+ background:linear-gradient(135deg,#ff456b,#ff5578);color:#fff;font-size:17px;
+ font-weight:800;cursor:pointer;box-shadow:0 8px 18px rgba(255,79,115,.20);
+ transition:.18s;position:relative;overflow:hidden;
+}
+button.calculate:before{display:none}
+button.calculate:hover{filter:brightness(1.02)}
+button.calculate:active{transform:translateY(1px) scale(.995);box-shadow:0 4px 12px rgba(255,79,115,.15)}
+.result{
+ border-radius:20px;padding:18px;margin-top:15px;animation:none;
+}
+.result small{color:var(--muted);font-size:13px}
+.result .big{font-size:31px;font-weight:900;margin-top:6px;text-align:center}
+.result.result-safe{
+ background:linear-gradient(145deg,#f4fcf6,#fbfffc);border:1px solid #b9e4c6;
+}
+.result.result-safe .big{color:var(--success)}
+.result.result-warning{
+ background:linear-gradient(145deg,#fff4f4,#fffafa);border:1px solid #efc5ca;
+}
+.result.result-warning .big{color:var(--danger)}
+.result-status{
+ display:flex;align-items:center;justify-content:center;gap:7px;margin-top:9px;
+ font-size:12px;font-weight:800;text-align:center;
+}
+.result-safe .result-status{color:#178348}
+.result-warning .result-status{color:#c44750}
+.chip{
+ display:inline-block;background:#fff;border:1px solid #dceee1;border-radius:999px;
+ padding:7px 11px;font-size:11px;margin:9px 3px 0 0;color:#2d5b3d;
+}
+.dose-reference{
+ margin-top:13px;padding:13px 14px;border-radius:15px;
+ background:#f5fbf6;border:1px solid #bfe5c8;color:#405563;
+ font-size:11px;line-height:1.75;
+}
+.dose-reference-title{font-weight:900;color:#188442;margin-bottom:4px;font-size:12px}
+.dose-reference b{color:#304858}
+.result-warning .dose-reference{background:#fff;border-color:#dfe5eb}
+.result-warning .dose-reference-title{color:#415363}
+.footer{font-size:10.5px;color:#7b8995;text-align:center;margin-top:16px;line-height:1.75;padding:0 8px}
+select{appearance:auto}
+@media(max-width:520px){
+ .grid{grid-template-columns:1fr}
+ .app{padding:0 9px 26px}
+ h1{font-size:25px}.hero{padding:13px 3px 11px}
+ .hero-content{gap:9px}.brand-icon{width:40px;height:40px}
+ .instagram-link{font-size:11px}.card{padding:14px}
+ label{font-size:13px}
+}
+
+.dose-warning, .warning, .error, .alert-warning{
+  border-radius:14px !important;
+  padding:10px 12px !important;
+  font-size:12px !important;
+  line-height:1.6 !important;
+}
+
+/* Capture protection / owner-only deterrence */
+#captureProtection{
+  display:none;position:fixed;inset:0;z-index:99999;
+  background:#11131a;color:#fff;align-items:center;justify-content:center;
+  text-align:center;padding:30px;font-family:Arial,Tahoma,sans-serif;
+}
+#captureProtection .capture-box{
+  max-width:420px;padding:24px;border:1px solid #343949;
+  border-radius:20px;background:#1b1e28;box-shadow:0 15px 45px rgba(0,0,0,.35)
+}
+@media print{
+  body>*{display:none!important}
+  body:after{content:"Protected content — printing is disabled.";display:block!important}
+}
+
+
+/* Welcome / permanent activation screen */
+#welcomeScreen{
+  position:fixed;inset:0;z-index:100000;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#fff7f9,#f7f9fb);
+  padding:22px;font-family:Arial,Tahoma,sans-serif;
+}
+.welcome-card{
+  width:min(440px,100%);background:#fff;border:1px solid #edf0f3;
+  border-radius:28px;padding:30px 24px;text-align:center;
+  box-shadow:0 18px 55px rgba(30,40,65,.13)
+}
+.welcome-icon{
+  width:72px;height:72px;margin:0 auto 16px;border-radius:22px;
+  background:#fff0f3;display:grid;place-items:center;font-size:38px
+}
+.welcome-card h2{margin:0 0 8px;font-size:27px;color:#21364a}
+.welcome-card p{margin:0;color:#738294;line-height:1.7;font-size:14px}
+.welcome-price{
+  margin:20px 0;padding:15px;border-radius:17px;
+  background:#f8fafc;border:1px solid #e8edf2
+}
+.welcome-price b{display:block;font-size:26px;color:#21364a;margin-bottom:4px}
+.welcome-btn{
+  width:100%;height:54px;border:0;border-radius:15px;
+  background:linear-gradient(135deg,#ff456b,#ff5578);color:#fff;
+  font-size:16px;font-weight:800;cursor:pointer;
+  box-shadow:0 8px 18px rgba(255,79,115,.20)
+}
+.welcome-note{margin-top:12px!important;font-size:11px!important}
+body.dark-mode #welcomeScreen{background:#11131a}
+body.dark-mode .welcome-card{background:#1b1e28;border-color:#303544}
+body.dark-mode .welcome-card h2{color:#eef1f7}
+body.dark-mode .welcome-price{background:#151821;border-color:#343949}
+body.dark-mode .welcome-price b{color:#eef1f7}
+
+
+/* Premium PRF module */
+.premium-card{margin-top:13px;border:1px solid #f0d28b!important;background:linear-gradient(180deg,#fffdf7,#fff)!important}
+.premium-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:#fff4cf;color:#8a6410;font-size:11px;font-weight:900}
+.prf-types{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.prf-type{border:1px solid #e5e9ee;background:#fff;border-radius:13px;padding:10px;text-align:right;cursor:pointer;font-weight:800;color:#304152}
+.prf-type.active{border-color:#e2b94d;background:#fff9e8;box-shadow:0 0 0 2px rgba(226,185,77,.10)}
+.prf-result{margin-top:12px;padding:13px;border-radius:15px;background:#f7fafc;border:1px solid #e2e8ef;line-height:1.75;font-size:12px}
+.premium-lock{padding:18px;border-radius:16px;background:#fff9e8;border:1px solid #f0d28b;text-align:center}
+.premium-lock button{margin-top:10px;border:0;border-radius:12px;padding:10px 16px;background:#d9a928;color:#fff;font-weight:800;cursor:pointer}
+body.dark-mode .premium-card{background:#1b1e28!important;border-color:#6f5a25!important}
+body.dark-mode .prf-type{background:#151821;border-color:#343949;color:#eef1f7}
+body.dark-mode .prf-type.active{background:#2b281d;border-color:#d9a928}
+body.dark-mode .prf-result{background:#151821;border-color:#343949}
+body.dark-mode .premium-lock{background:#2b281d;border-color:#6f5a25}
+@media(max-width:520px){.prf-types{grid-template-columns:1fr}}
+
+
+.prf-page{display:none;min-height:100vh}
+.prf-page.active{display:block}
+.main-content-view.prf-hidden{display:none!important}
+.prf-page-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.prf-back{border:1px solid #e3e8ee;background:#fff;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer;color:#304152}
+body.dark-mode .prf-back{background:#151821;border-color:#343949;color:#eef1f7}
+
+
+/* Local Anesthesia Calculator page */
+.la-page{display:none;min-height:100vh}
+.la-page.active{display:block}
+.la-page-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.la-back{border:1px solid #e3e8ee;background:#fff;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer;color:#304152}
+.la-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.la-result{margin-top:12px;padding:15px;border-radius:16px;background:#f7fafc;border:1px solid #e2e8ef;line-height:1.8}
+.la-alert{margin-top:10px;padding:11px 13px;border-radius:13px;background:#fff4e5;border:1px solid #f1d39a;color:#805b13;font-size:12px;line-height:1.7}
+body.dark-mode .la-back{background:#151821;border-color:#343949;color:#eef1f7}
+body.dark-mode .la-result{background:#151821;border-color:#343949}
+body.dark-mode .la-alert{background:#2b281d;border-color:#6f5a25;color:#f0d98a}
+@media(max-width:520px){.la-grid{grid-template-columns:1fr}}
+
+
+:root{--modern-purple:#6d28d9;--modern-purple-soft:#f4edff;--modern-blue:#3b82f6;--modern-cyan:#0ea5e9;--modern-gold:#f5b82e;--modern-pink:#e83e78;--modern-line:#e9e9f1}
+body{padding-bottom:88px;background:linear-gradient(180deg,#fff 0%,#faf9fd 100%)}
+.app{max-width:820px;padding:0 18px 105px}
+.hero{padding:18px 2px 10px;box-shadow:none}
+.hero-topbar{display:block!important}
+.brand-icon{background:var(--modern-purple-soft);color:var(--modern-purple);width:48px;height:48px;border-radius:16px}
+h1{font-size:30px;letter-spacing:-.8px}.hero p{font-size:13px}
+.premium-banner{display:flex;align-items:center;gap:13px;padding:16px;border:1px solid #e4d7ff;border-radius:22px;background:linear-gradient(90deg,#fff,#fbf7ff);box-shadow:0 8px 25px rgba(88,42,160,.06)}.premium-icon{width:58px;height:58px;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#5b21b6);color:#fff;display:grid;place-items:center;font-size:25px;flex:none}.premium-copy{display:flex;flex-direction:column;gap:5px;flex:1}.premium-copy b{font-size:20px;color:#5b21b6}.premium-copy span{font-size:13px;color:#778195;line-height:1.6}.premium-banner button{border:0;border-radius:14px;padding:11px 14px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-weight:900;white-space:nowrap}
+.home-section-head{margin:28px 2px 12px}.home-section-head h2,.home-panel-head h2{margin:0;font-size:22px;font-weight:900;color:#26364d}.quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.quick-card{border:1px solid #e6e6ee;background:#fff;border-radius:24px;padding:22px 10px;min-height:176px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#27344b;box-shadow:0 8px 24px rgba(35,40,70,.06);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}.quick-card:active{transform:scale(.98)}.quick-card b{font-size:15px;font-weight:900;text-align:center}.quick-icon,.protocol-icon{display:grid;place-items:center;border-radius:20px}.quick-icon{width:60px;height:60px;font-size:30px}.quick-icon.blue,.protocol-icon.blue{background:#edf5ff;color:#2f7ce9}.quick-icon.gold{background:#fff7e4;color:#e4a51b}.quick-icon.purple,.protocol-icon.purple{background:#f3eaff;color:#7035d6}.quick-icon.cyan,.protocol-icon.cyan{background:#eaf7ff;color:#168bd0}.quick-icon.pink,.protocol-icon.pink{background:#fff0f5;color:#d93870}
+.home-panel{margin-top:16px;border:1px solid var(--modern-line);border-radius:22px;background:#fff;padding:14px;box-shadow:0 6px 20px rgba(35,40,70,.05)}.home-panel-head{display:flex;align-items:center;justify-content:space-between;margin:2px 4px 9px}.home-panel-head button{border:0;background:transparent;color:#2563eb;font-weight:800}.protocol-row{width:100%;display:flex;align-items:center;gap:10px;text-align:right;border:1px solid #edf0f5;background:#fff;border-radius:18px;padding:12px;margin-top:9px;cursor:pointer;position:relative}.protocol-icon{width:46px;height:46px;flex:none;font-size:20px}.protocol-copy{display:flex;flex-direction:column;gap:3px;flex:1}.protocol-copy b{font-size:14px}.protocol-copy small{font-size:11px;color:#7a8495}.protocol-arrow{font-size:27px;color:#9aa2b2;transform:rotate(180deg)}.protocol-row em{position:absolute;left:10px;top:8px;background:#fff7dd;color:#9b7415;border-radius:999px;padding:4px 7px;font-size:9px;font-style:normal;font-weight:900}
+.notice-card{margin-top:15px;padding:15px 17px;border:1px solid #e6d8ff;border-radius:20px;background:#fcf9ff}.notice-title{color:#5b21b6;font-weight:900;font-size:16px}.notice-card p{margin:6px 0 0;color:#7a8495;font-size:12px;line-height:1.8}
+.treatments-view{display:none}.treatments-view.active{display:block}
+.bottom-nav{position:fixed;z-index:3000;left:50%;bottom:10px;transform:translateX(-50%);width:min(94%,760px);display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:7px 8px;border:1px solid #ececf4;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-radius:25px;box-shadow:0 12px 34px rgba(25,20,60,.14)}.bottom-item{border:0;background:transparent;border-radius:18px;padding:7px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;color:#7d8799;cursor:pointer;font-size:10px}.bottom-item span{font-size:20px;line-height:1}.bottom-item b{font-size:10px}.bottom-item.active{color:var(--modern-purple);background:#f5efff}
+.more-backdrop{position:fixed;inset:0;background:rgba(24,20,40,.25);z-index:3100;display:none}.more-backdrop.open{display:block}.more-sheet{position:fixed;z-index:3200;left:50%;bottom:0;transform:translate(-50%,110%);width:min(96%,520px);background:#fff;border-radius:28px 28px 0 0;padding:12px 14px 24px;box-shadow:0 -15px 45px rgba(30,20,60,.18);transition:.25s}.more-sheet.open{transform:translate(-50%,0)}.more-handle{width:42px;height:5px;border-radius:999px;background:#d9dbe4;margin:2px auto 14px}.more-title{font-size:19px;font-weight:900;padding:4px 5px 8px}.more-sheet button{width:100%;border:0;background:#fff;padding:13px 10px;border-radius:14px;display:flex;align-items:center;gap:12px;text-align:right;font-size:14px;color:#29364c;cursor:pointer}.more-sheet button:hover{background:#f7f5fb}.more-sheet button em{margin-right:auto;color:#a07816;font-size:9px;font-style:normal;font-weight:900}
+@media(max-width:620px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.quick-card{min-height:176px;padding:20px 8px}.quick-card b{font-size:14px}.premium-banner{align-items:flex-start;flex-wrap:wrap;padding:18px}.premium-copy{min-width:calc(100% - 75px)}.premium-banner button{width:100%;height:52px;font-size:16px}}
+
+</style>
+
+<style id="darkModeStyles">
+body.dark-mode {
+  background:#11131a !important;
+  color:#eef1f7 !important;
+}
+body.dark-mode .app { background:#11131a !important; }
+body.dark-mode .hero {
+  background:linear-gradient(135deg,#171a24,#202331) !important;
+  color:#eef1f7 !important;
+}
+body.dark-mode .card,
+body.dark-mode .hero-content,
+body.dark-mode .patient-tabs,
+body.dark-mode .tabs,
+body.dark-mode .section-title {
+  background:#1b1e28 !important;
+  color:#eef1f7 !important;
+  border-color:#303544 !important;
+}
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background:#151821 !important;
+  color:#eef1f7 !important;
+  border-color:#343949 !important;
+}
+body.dark-mode label,
+body.dark-mode p,
+body.dark-mode .hint,
+body.dark-mode .footer,
+body.dark-mode small {
+  color:#b8becd !important;
+}
+body.dark-mode .instagram-link {
+  color:#e9edf7 !important;
+}
+body.dark-mode #patientMenuButton {
+  background:#1b1e28 !important;
+  color:#eef1f7 !important;
+  border-color:#42485a !important;
+}
+body.dark-mode #patientMenuDropdown {
+  background:#1b1e28 !important;
+  border-color:#343949 !important;
+}
+body.dark-mode #patientMenuDropdown button {
+  color:#eef1f7 !important;
+}
+body.dark-mode #patientRecordsModal {
+  background:rgba(0,0,0,.72) !important;
+}
+body.dark-mode #patientRecordsModal .card {
+  background:#1b1e28 !important;
+  color:#eef1f7 !important;
+}
+</style>
+</head>
+<body translate="no" class="notranslate">
+
+<div id="welcomeScreen">
+  <div class="welcome-card">
+    <div class="welcome-icon">💊</div>
+    <h2>مرحبًا بك في MediDose</h2>
+    <p>حاسبة جرعات دوائية مصممة لتسهيل الحساب والتحقق من الجرعات.</p>
+    <div class="welcome-price">
+      <b>$7</b>
+      <span style="font-size:12px;color:#738294">تفعيل دائم لمرة واحدة</span>
+    </div>
+    <button class="welcome-btn" type="button" onclick="activateMediDose()">
+      تفعيل MediDose
+    </button>
+    <p class="welcome-note">
+      بعد التفعيل على هذا الجهاز، يبقى التطبيق مفعّلًا حتى يتم حذف بيانات المتصفح.
+    </p>
+  </div>
+</div>
+
+
+<div id="captureProtection" aria-hidden="true">
+  <div class="capture-box">
+    <div style="font-size:34px;margin-bottom:10px">🔒</div>
+    <h2 style="margin:0 0 8px">المحتوى محمي</h2>
+    <div style="color:#b8becd;line-height:1.7;font-size:14px">
+      هذا المحتوى مخصص للمالك فقط.
+    </div>
+  </div>
+</div>
+
+<div class="app main-content-view">
+<header class="hero" style="position:relative">
+<div class="hero-topbar" style="display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative">
+  <div class="brand-row">
+    <div class="brand-icon">💊</div>
+    <div>
+      <h1>MediDose</h1>
+      <p>Medical Dose Calculator</p>
+    </div>
+  </div>
+
+  
+</div>
+
+<div id="patientRecordsModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);padding:20px;overflow:auto">
+  <div class="card" style="max-width:720px;margin:40px auto;padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0">بيانات المرضى</h3>
+      <button type="button" onclick="closePatientRecordsModal()">✕</button>
+    </div>
+
+    <div class="hint" style="margin:10px 0">البيانات محفوظة محليًا على هذا الجهاز والمتصفح.</div>
+
+    <div class="grid">
+      <div>
+        <label>Patient name / ID</label>
+        <input id="recordPatientId" type="text" placeholder="اسم أو رقم المريض">
+      </div>
+      <div>
+        <label>Date</label>
+        <input id="recordDate" type="date">
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Notes</label>
+        <input id="recordNotes" type="text" placeholder="ملاحظات اختيارية">
+      </div>
+      <div style="display:flex;align-items:end;gap:8px">
+        <button type="button" onclick="saveCurrentPatientRecord()">حفظ</button>
+        <button type="button" onclick="clearPatientRecordForm()">مسح</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label>Saved patients</label>
+      <select id="savedPatientRecords" style="width:100%" onchange="loadPatientRecord(this.value)">
+        <option value="">— اختر مريضًا للمراجعة —</option>
+      </select>
+    </div>
+
+    <div id="patientRecordsList" style="margin-top:12px"></div>
+  </div>
+</div>
+<div class="hero-content">
+  <div class="medical-badge">🩺 Clinical Dose Calculator • Medication Dose</div>
+  <a class="instagram-link" style="margin-top:10px;display:inline-flex" href="https://www.instagram.com/al.baya.ti/" target="_blank" rel="noopener noreferrer" aria-label="فتح حساب Instagram @al.baya.ti">
+    <span class="instagram-icon">◎</span>
+    <span>@al.baya.ti</span>
+    <span class="instagram-arrow">↗</span>
+  </a>
+</div>
+</header>
+
+
+<section id="homeView" class="home-view">
+  <div class="premium-banner">
+    <div class="premium-icon">◆</div>
+    <div class="premium-copy"><b>MediDose Premium</b><span>احصل على جميع الميزات المتقدمة والبروتوكولات الحصرية</span></div>
+    <button type="button" onclick="showPremiumWelcome()">تفعيل Premium</button>
+  </div>
+  <div class="home-section-head"><h2>اختصارات سريعة</h2></div>
+  <div class="quick-grid">
+    <button type="button" class="quick-card" data-search="Dosage Calculation" onclick="showTreatments()"><span class="quick-icon gold">💊</span><b>Dosage Calculation</b></button>
+    <button type="button" class="quick-card" data-search="Clinical Protocol" onclick="showClinicalProtocols()"><span class="quick-icon blue">🦷</span><b>Clinical Protocol</b></button>
+    <button type="button" class="quick-card" data-search="PRF Premium" onclick="openPRFPremium()"><span class="quick-icon purple">🧬</span><b>PRF Premium</b></button>
+    <button type="button" class="quick-card" data-search="Local Anesthesia Calculator" onclick="openLocalAnesthesia()"><span class="quick-icon cyan">💉</span><b>تخدير موضعي</b></button>
+  </div>
+  <div class="home-panel">
+    <div class="home-panel-head"><h2>أحدث البروتوكولات</h2><button type="button" onclick="showTreatments()">عرض الكل ←</button></div>
+    <button type="button" class="protocol-row" data-search="PRF Protocols" onclick="openPRFPremium()"><span class="protocol-icon purple">🧬</span><span class="protocol-copy"><b>PRF Protocols</b><small>بروتوكولات PRF وحساب RCF</small></span><span class="protocol-arrow">‹</span><em>جديد</em></button>
+    <button type="button" class="protocol-row" data-search="Local Anesthesia Calculator" onclick="openLocalAnesthesia()"><span class="protocol-icon cyan">💉</span><span class="protocol-copy"><b>Local Anesthesia Calculator</b><small>حساب الجرعة حسب وزن المريض ونوع المخدر</small></span><span class="protocol-arrow">‹</span></button>
+    <button type="button" class="protocol-row" data-search="Dental Trauma" onclick="showDentalTraumaComingSoon()"><span class="protocol-icon pink">🦷</span><span class="protocol-copy"><b>Dental Trauma Protocols</b><small>إرشادات إصابات الأسنان</small></span><span class="protocol-arrow">‹</span></button>
+  </div>
+  <div class="notice-card"><div class="notice-title">ⓘ تنويه مهم</div><p>جميع المعلومات في هذا التطبيق للمراجعة فقط ولا تغني عن الحكم السريري للطبيب. تحقق دائمًا من النشرة الدوائية المحلية والبروتوكول المعتمد.</p></div>
+</section>
+
+<div id="treatmentsView" class="treatments-view">
+<section class="card">
+<div class="section-title">🩺 Patient Information</div>
+<div id="patientTabs" class="tabs patient-tabs" style="margin-bottom:14px">
+<button id="childBtn" class="tab active" onclick="setPatientType('child',this)">👶 Children</button>
+<button id="adultBtn" class="tab" onclick="setPatientType('adult',this)">🧑 Adults</button>
+</div>
+<div class="grid">
+<div><label>Weight (kg) *</label><input id="weight" type="number" min="0" step="0.1" placeholder="e.g. 18"></div>
+<div id="yearsBox"><label>Age (years)</label><input id="years" type="number" min="0" step="1" placeholder="Enter years"></div>
+<div id="monthsBox"><label>Age (months)</label><input id="months" type="number" min="0" step="1" placeholder="Enter months"></div>
+</div>
+<div class="hint" id="patientHint">Children mode: calculations are based on weight and mg/kg dose.</div>
+<div style="margin-top:15px">
+<label>Health Status</label>
+<select id="healthStatus" onchange="toggleHealthFields()">
+<option value="healthy">🟢 Healthy</option>
+<option value="liver">🟠 Hepatic Impairment</option>
+<option value="kidney">🔵 Renal Impairment</option>
+<option value="both">🔴 Hepatic + Renal</option>
+</select>
+</div>
+<div id="liverFields" class="hidden" style="margin-top:12px">
+<div class="section-title" style="font-size:14px">🧪 Liver Assessment</div>
+<div class="grid">
+<div><label>ALT (U/L)</label><input id="alt" type="number" min="0" step="0.1"></div>
+<div><label>AST (U/L)</label><input id="ast" type="number" min="0" step="0.1"></div>
+<div><label>Total Bilirubin (mg/dL)</label><input id="bilirubin" type="number" min="0" step="0.01"></div>
+<div><label>Albumin (g/dL)</label><input id="albumin" type="number" min="0" step="0.1"></div>
+<div><label>INR</label><input id="inr" type="number" min="0" step="0.01"></div>
+</div>
+<div class="hint">Laboratory values are for assessment and alerts only; dose is not automatically reduced from ALT/AST alone.</div>
+</div>
+<div id="kidneyFields" class="hidden" style="margin-top:12px">
+<div class="section-title" style="font-size:14px">🧪 Renal Assessment</div>
+<div class="grid">
+<div><label>Creatinine Clearance (CrCl, mL/min)</label><input id="crcl" type="number" min="0" step="0.1"></div>
+<div><label>Hemodialysis</label><select id="hemodialysis"><option value="no">No</option><option value="yes">Yes</option></select></div>
+</div>
+<div class="hint" id="renalMessage">For Augmentin IV, renal adjustment is based on CrCl. Do not substitute eGFR automatically.</div>
+</div>
+</section>
+
+<section class="card">
+<div class="tabs">
+<button class="tab active" onclick="switchType('abx',this)">💊 Antibiotic</button>
+<button class="tab" onclick="switchType('analgesic',this)">💊 Analgesic</button>
+</div>
+
+<div id="abxBox">
+<div class="section-title">💊 Antibiotic</div>
+<div class="grid">
+<div><label>Drug</label>
+<div class="drug-picker">
+  <div class="drug-category-tabs" id="drugCategoryTabs">
+    <button type="button" class="drug-cat active" data-cat="pediatric">👶 أطفال</button>
+    <button type="button" class="drug-cat" data-cat="adult">🧑 بالغين</button>
+  </div>
+  <div class="drug-list" id="drugList">
+    <button type="button" class="drug-option" data-value="amoxicillin" data-cat="pediatric">💊 Amoxicillin</button>
+    <button type="button" class="drug-option" data-value="amoxclav" data-cat="pediatric">💊 Amoxicillin / Clavulanate</button>
+    <button type="button" class="drug-option" data-value="ampicillin" data-cat="pediatric">💊 Ampicillin</button>
+    <button type="button" class="drug-option" data-value="cephalexin" data-cat="pediatric">💊 Cephalexin</button>
+    <button type="button" class="drug-option" data-value="cefixime" data-cat="pediatric">💊 Cefixime</button>
+    <button type="button" class="drug-option" data-value="azithromycin" data-cat="pediatric">💊 Azithromycin</button>
+    <button type="button" class="drug-option" data-value="clarithromycin" data-cat="pediatric">💊 Clarithromycin</button>
+    <button type="button" class="drug-option" data-value="erythromycin" data-cat="pediatric">💊 Erythromycin</button>
+    <button type="button" class="drug-option" data-value="metronidazole" data-cat="pediatric">💊 Metronidazole</button>
+    <button type="button" class="drug-option" data-value="tinidazole" data-cat="pediatric">💊 Tinidazole</button>
+    <button type="button" class="drug-option" data-value="clindamycin" data-cat="pediatric">💊 Clindamycin</button>
+
+    <button type="button" class="drug-option" data-value="adult_amoxicillin" data-cat="adult">💊 Amoxicillin</button>
+    <button type="button" class="drug-option" data-value="adult_amoxclav" data-cat="adult">💊 Amoxicillin / Clavulanate</button>
+    <button type="button" class="drug-option" data-value="adult_ampicillin" data-cat="adult">💊 Ampicillin</button>
+    <button type="button" class="drug-option" data-value="adult_piperacillin" data-cat="adult">💊 Piperacillin</button>
+    <button type="button" class="drug-option" data-value="adult_cephalexin" data-cat="adult">💊 Cephalexin</button>
+    <button type="button" class="drug-option" data-value="adult_cefixime" data-cat="adult">💊 Cefixime</button>
+    <button type="button" class="drug-option" data-value="adult_azithromycin" data-cat="adult">💊 Azithromycin</button>
+    <button type="button" class="drug-option" data-value="adult_clarithromycin" data-cat="adult">💊 Clarithromycin</button>
+    <button type="button" class="drug-option" data-value="adult_erythromycin" data-cat="adult">💊 Erythromycin</button>
+    <button type="button" class="drug-option" data-value="adult_doxycycline" data-cat="adult">💊 Doxycycline</button>
+    <button type="button" class="drug-option" data-value="adult_metronidazole" data-cat="adult">💊 Metronidazole</button>
+    <button type="button" class="drug-option" data-value="adult_tinidazole" data-cat="adult">💊 Tinidazole</button>
+    <button type="button" class="drug-option" data-value="adult_clindamycin" data-cat="adult">💊 Clindamycin</button>
+  </div>
+  <select id="abx" aria-hidden="true" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
+<optgroup label="Pediatric Antibiotics">
+<option value="amoxicillin" data-range="20–40 mg/kg/day q8h OR 25–45 mg/kg/day q12h" data-max="500 mg/dose (q8h) or 875 mg/dose (q12h)" data-syrup="250,400">Amoxicillin — 25–50 mg/kg/day</option>
+<option value="amoxclav" data-range="25–45 mg/kg/day (amoxicillin component), q12h" data-max="875 mg/dose; 1750 mg/day" data-syrup="125,250,400" data-iv-dose="25" data-iv-freq="3" data-iv-range="25 mg/5 mg per kg every 8 hours (amoxicillin/clavulanate components)" data-iv-basis="amoxicillin component">Amoxicillin / Clavulanate — 25–90 mg/kg/day</option>
+<option value="ampicillin" data-range="Not listed in the AAPD dental table" data-max="" data-syrup="">Ampicillin — 50–200 mg/kg/day</option>
+<option value="cephalexin" data-range="25–50 mg/kg/day q6–12h; severe 75–100 mg/kg/day q6–8h" data-max="2 g/day mild–moderate; 4 g/day severe" data-syrup="125,250">Cephalexin — 25–100 mg/kg/day</option>
+<option value="cefixime" data-range="Not listed in the AAPD dental table" data-max="" data-syrup="100,200">Cefixime — 8–12 mg/kg/day</option>
+<option value="azithromycin" data-range="10–12 mg/kg/dose day 1, then 5–6 mg/kg/dose daily" data-max="500 mg day 1" data-syrup="100,200">Azithromycin — 5–12 mg/kg/day</option>
+<option value="clarithromycin" data-range="7.5 mg/kg/dose q12h" data-max="500 mg/dose" data-syrup="125,250">Clarithromycin — 15 mg/kg/day</option>
+<option value="erythromycin" data-range="Not listed in the AAPD dental table" data-max="" data-syrup="200">Erythromycin — 30–50 mg/kg/day</option>
+<option value="metronidazole" data-range="10 mg/kg/dose q8h for selected periodontal disease" data-max="250 mg/dose" data-syrup="125,250">Metronidazole — 20–40 mg/kg/day</option>
+<option value="tinidazole" data-range="AAPD: no pediatric odontogenic infection recommendation; periodontal disease 10 mg/kg/dose q8h in penicillin-allergic patients" data-max="250 mg/dose" data-syrup="">Tinidazole — 20 mg/kg/day</option>
+<option value="clindamycin" data-range="10 mg/kg/dose q8h for selected periodontal disease" data-max="250 mg/dose" data-syrup="75">Clindamycin — 20–40 mg/kg/day</option>
+</optgroup>
+<optgroup label="Adult Antibiotics">
+<option value="adult_amoxicillin" data-range="—" data-syrup="">Amoxicillin — Adult</option>
+<option value="adult_amoxclav" data-range="—" data-syrup="">Amoxicillin / Clavulanate — Adult</option>
+<option value="adult_ampicillin" data-range="—" data-syrup="">Ampicillin — Adult</option>
+<option value="adult_piperacillin" data-range="—" data-syrup="">Piperacillin — Adult</option>
+<option value="adult_cephalexin" data-range="—" data-syrup="">Cephalexin — Adult</option>
+<option value="adult_cefixime" data-range="—" data-syrup="">Cefixime — Adult</option>
+<option value="adult_azithromycin" data-range="—" data-syrup="">Azithromycin — Adult</option>
+<option value="adult_clarithromycin" data-range="—" data-syrup="">Clarithromycin — Adult</option>
+<option value="adult_erythromycin" data-range="—" data-syrup="">Erythromycin — Adult</option>
+<option value="adult_doxycycline" data-range="—" data-syrup="">Doxycycline — Adult</option>
+<option value="adult_metronidazole" data-range="—" data-syrup="">Metronidazole — Adult</option>
+<option value="adult_tinidazole" data-range="—" data-syrup="">Tinidazole — Adult</option>
+<option value="adult_clindamycin" data-range="—" data-syrup="">Clindamycin — Adult</option>
+</optgroup>
+</select>
+<div id="abxRange" class="hint" style="margin-top:8px;font-weight:700;color:#368d80"></div>
+<div id="abxMax" class="hint" style="margin-top:4px"></div>
+</div>
+<div><label>Route</label>
+<select id="route"><option>Syrup / Oral</option><option>IV</option><option>IM</option></select></div>
+</div>
+</div>
+
+<div id="analgesicBox" class="hidden">
+<div class="section-title">💊 Analgesic</div>
+<div class="grid">
+<div><label>Drug</label>
+<select id="analgesic">
+<option value="paracetamol" data-range="10–15 mg/kg/dose every 4–6 hours PRN" data-max="75 mg/kg/day, not to exceed 4,000 mg/24 h">Paracetamol — 10–15 mg/kg/dose</option>
+<option value="ibuprofen" data-range="4–10 mg/kg/dose every 6–8 hours PRN" data-max="400 mg per dose; 3,200 mg/day in children >12 years/adults">Ibuprofen — 4–10 mg/kg/dose</option>
+<option value="naproxen" data-range="5–6 mg/kg every 12 hours PRN for children/adolescents <60 kg" data-max="1,000 mg/day">Naproxen — 5–7 mg/kg/dose</option>
+</select></div>
+<div><label>Route</label>
+<select id="aroute"><option>Syrup / Oral</option><option>IV</option></select></div>
+</div>
+</div>
+</section>
+
+
+
+
+<section class="card">
+<div class="section-title">🧮 Dose Calculation</div>
+<div class="grid">
+<div><label>Dose Value</label><input id="dose" type="number" min="0" step="0.1" placeholder="e.g. 25"></div>
+<div><label>Dose Unit</label>
+<select id="unit"><option value="day">mg/kg/day</option><option value="dose">mg/kg/dose</option></select>
+</div>
+<div><label>Doses per day</label><input id="freq" type="number" min="1" step="1" value="3"></div>
+<div id="concBox">
+<label id="concLabel">Oral Liquid Concentration</label>
+<select id="concPreset"></select>
+<div id="customConcBox" class="hidden" style="margin-top:8px">
+<input id="conc" type="number" min="0" step="0.1" placeholder="e.g. 250">
+</div>
+<div id="concHint" class="hint">اختر التركيز المناسب للدواء.</div>
+</div>
+<div id="vialBox" class="hidden"><label id="vialMgLabel">Amount of drug in vial (mg)</label><input id="vialMg" type="number" min="0" step="0.1" placeholder="e.g. 500"></div>
+<div id="vialVolumeBox" class="hidden"><label>Final volume after reconstitution (mL)</label><input id="vialVolume" type="number" min="0" step="0.1" placeholder="e.g. 10"></div>
+</div>
+<div class="hint">Enter the prescribed dose from a reliable drug reference. The app does not choose the dose automatically.</div>
+<button class="calculate" onclick="calculate()">Calculate Dose</button>
+<div id="result" class="result hidden"></div>
+</section>
+
+<div class="footer">
+<b>Dose reference:</b> Integrated antibiotic and analgesic dose references are based on the AAPD Reference Manual of Pediatric Dentistry (2025–2026). Pediatric dosage should not exceed adult dosage.
+<br><br>Warning: Educational calculation tool; not a substitute for clinical judgment or a drug reference.<br>
+Always verify age, weight, maximum dose, renal/hepatic function, allergies, and commercial concentration before administration.
+</div>
+
+
+<nav class="bottom-nav" id="bottomNav">
+  <button type="button" class="bottom-item active" data-nav="home" onclick="showHome()"><span>⌂</span><b>الرئيسية</b></button>
+  <button type="button" class="bottom-item" data-nav="treatments" onclick="showTreatments()"><span>♧</span><b>حساب الجرعات</b></button>
+  <button type="button" class="bottom-item" data-nav="prf" onclick="openPRFPremium()"><span>🧬</span><b>PRF Premium</b></button>
+  <button type="button" class="bottom-item" data-nav="more" onclick="toggleMoreSheet()"><span>⋮</span><b>المزيد</b></button>
+</nav>
+<div id="moreSheetBackdrop" class="more-backdrop"></div>
+<div id="moreSheet" class="more-sheet" aria-hidden="true">
+  <div class="more-handle"></div><div class="more-title">المزيد</div>
+  <button type="button" onclick="openPatientRecordsFromMore()">👤 <span>بيانات المرضى</span></button>
+  <button type="button" onclick="openNewPatientFromMore()">＋ <span>إضافة مريض جديد</span></button>
+  <button type="button" onclick="openLocalAnesthesia()">💉 <span>Local Anesthesia Calculator</span><em>PREMIUM</em></button>
+  <button type="button" onclick="openPRFPremium()">🧬 <span>PRF Premium</span><em>PREMIUM</em></button>
+  <button type="button" onclick="toggleDarkMode();closeMoreSheet()">🌙 <span id="moreDarkLabel">الوضع المظلم</span></button>
+  <button type="button" onclick="showDentalTraumaComingSoon()">🚑 <span>Dental Trauma Protocols</span></button>
+  <button type="button" onclick="showAboutApp()">ⓘ <span>عن التطبيق</span></button>
+</div>
+
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+function applyDarkMode(){
+  const enabled=localStorage.getItem('medidose_dark_mode')==='1';
+  document.body.classList.toggle('dark-mode', enabled);
+  const label=document.getElementById('darkModeLabel');
+  if(label) label.textContent=enabled ? 'الوضع الفاتح' : 'الوضع المظلم';
+}
+function toggleDarkMode(){
+  const enabled=document.body.classList.toggle('dark-mode');
+  localStorage.setItem('medidose_dark_mode', enabled ? '1' : '0');
+  const label=document.getElementById('darkModeLabel');
+  if(label) label.textContent=enabled ? 'الوضع الفاتح' : 'الوضع المظلم';
+  closePatientMenu();
+}
+document.addEventListener('DOMContentLoaded', applyDarkMode);
+</script>
+<script>
+function togglePatientMenu(){
+  const menu=document.getElementById('patientMenuDropdown');
+  if(menu) menu.style.display = menu.style.display==='none' ? 'block' : 'none';
+}
+function closePatientMenu(){
+  const menu=document.getElementById('patientMenuDropdown');
+  if(menu) menu.style.display='none';
+}
+function openPRFPremium(){
+  closePatientMenu();
+  const app=document.querySelector('.main-content-view');
+  const page=document.getElementById('prfPage');
+  if(app) app.classList.add('prf-hidden');
+  if(page) page.classList.add('active');
+  updatePRFLock();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function closePRFPage(){
+  const app=document.querySelector('.main-content-view');
+  const page=document.getElementById('prfPage');
+  if(page) page.classList.remove('active');
+  if(app) app.classList.remove('prf-hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function openPatientRecordsModal(){
+  closePatientMenu();
+  const modal=document.getElementById('patientRecordsModal');
+  if(modal) modal.style.display='block';
+  refreshPatientRecords();
+}
+function openNewPatientModal(){
+  closePatientMenu();
+  const modal=document.getElementById('patientRecordsModal');
+  if(modal) modal.style.display='block';
+  clearPatientRecordForm();
+  updateRecordDateAutomatically();
+  const pid=document.getElementById('recordPatientId');
+  if(pid) pid.focus();
+}
+function closePatientRecordsModal(){
+  const modal=document.getElementById('patientRecordsModal');
+  if(modal) modal.style.display='none';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const btn=document.getElementById('patientMenuButton');
+  if(btn) btn.addEventListener('click',togglePatientMenu);
+  document.addEventListener('click',(e)=>{
+    const c=document.getElementById('patientMenuContainer');
+    if(c && !c.contains(e.target)) closePatientMenu();
+  });
+});
+</script>
+<script>
+let type='abx';
+let patientType='child';
+
+function filterAntibioticsByPatient(){
+ const sel=document.getElementById('abx');
+ const child=patientType==='child';
+ [...sel.options].forEach(o=>{
+   if(!o.value) return;
+   const adult=o.value.startsWith('adult_');
+   o.hidden = child ? adult : !adult;
+   o.disabled = child ? adult : !adult;
+ });
+ // select first valid option
+ const valid=[...sel.options].find(o=>o.value && !o.hidden);
+ if(valid) sel.value=valid.value;
+ showAntibioticRange();
+ updateSyrupOptions();
+updateDoseMode();
+showAntibioticRange();
+}
+
+function updatePatientTheme(){
+  const tabs=document.getElementById('patientTabs');
+  if(!tabs) return;
+  tabs.classList.toggle('child-mode',patientType==='child');
+  tabs.classList.toggle('adult-mode',patientType==='adult');
+}
+
+function setPatientType(t,btn){
+ patientType=t;
+ filterAntibioticsByPatient();
+ document.querySelectorAll('#childBtn,#adultBtn').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');
+ const child=t==='child';
+ document.getElementById('yearsBox').classList.toggle('hidden',!child);
+ document.getElementById('monthsBox').classList.toggle('hidden',!child);
+ document.getElementById('patientHint').textContent=child
+   ? 'Children mode: calculations are based on weight and mg/kg dose.'
+   : 'Adults mode: enter the dose as mg/dose or mg/day; use mg/kg only when supported by the reference.';
+ updateDoseMode();
+}
+
+function updateDoseMode(){
+ const unit=document.getElementById('unit');
+
+ // The user can choose the dosing basis freely.
+ // Route/drug selection must not lock the child dose unit.
+ if(patientType==='adult'){
+   unit.innerHTML='<option value="adultDose">mg/dose</option><option value="adultDay">mg/day</option><option value="day">mg/kg/day</option><option value="dose">mg/kg/dose</option>';
+ }else{
+   unit.innerHTML='<option value="day">mg/kg/day</option><option value="dose">mg/kg/dose</option>';
+ }
+ unit.disabled=false;
+}
+function showAntibioticRange(){
+ const sel=document.getElementById('abx');
+ const opt=sel.options[sel.selectedIndex];
+ const box=document.getElementById('abxRange');
+ const max=document.getElementById('abxMax');
+ const route=document.getElementById('route').value;
+ const isAugmentinIV=patientType==='child' && opt.value==='amoxclav' && route==='IV';
+ if(isAugmentinIV){
+   box.textContent='IV product reference: '+(opt.dataset.ivRange||'—');
+   max.textContent='Dose basis: '+(opt.dataset.ivBasis||'component-specific')+'. This IV regimen is not an AAPD dental-table dose.';
+ }else{
+   box.textContent='AAPD reference dose: '+(opt.dataset.range||'—');
+   max.textContent=opt.dataset.max ? 'Maximum listed: '+opt.dataset.max : 'Warning: This drug is not listed as a standard pediatric dental dose in the AAPD table; no range is selected automatically.';
+ }
+}
+
+
+function updateSyrupOptions(){
+ const sel=document.getElementById('abx');
+ const opt=sel.options[sel.selectedIndex];
+ const values=(opt.dataset.syrup||'').split(',').filter(Boolean);
+ const preset=document.getElementById('concPreset');
+ preset.innerHTML='';
+ if(values.length){
+   values.forEach(v=>{
+     const o=document.createElement('option');
+     o.value=v;o.textContent=v+' mg / 5 mL';preset.appendChild(o);
+   });
+   const custom=document.createElement('option');
+   custom.value='custom';custom.textContent='إدخال تركيز آخر...';preset.appendChild(custom);
+   document.getElementById('concHint').textContent='اختر أحد التراكيز المتوفرة لهذا الدواء.';
+   document.getElementById('customConcBox').classList.add('hidden');
+ }else{
+   const custom=document.createElement('option');
+   custom.value='custom';custom.textContent='إدخال تركيز يدوي';preset.appendChild(custom);
+   document.getElementById('customConcBox').classList.remove('hidden');
+   document.getElementById('concHint').textContent='No preset concentration added; enter the concentration from the product label.';
+ }
+}
+document.getElementById('concPreset').addEventListener('change',function(){
+ document.getElementById('customConcBox').classList.toggle('hidden',this.value!=='custom');
+});
+function updateConcentrationFields(){
+ updateDoseMode();
+ showAntibioticRange();
+ const route = type==='abx'
+   ? document.getElementById('route').value
+   : document.getElementById('aroute').value;
+ const isIV = route==='IV';
+ const vialLabel=document.getElementById('vialMgLabel');
+ const augIV=type==='abx' && patientType==='child' && document.getElementById('abx').value==='amoxclav' && isIV;
+ if(vialLabel) vialLabel.textContent=augIV ? 'Amoxicillin component in vial (mg)' : 'Amount of drug in vial (mg)';
+ document.getElementById('concBox').classList.toggle('hidden',isIV);
+ document.getElementById('vialBox').classList.toggle('hidden',!isIV);
+ document.getElementById('vialVolumeBox').classList.toggle('hidden',!isIV);
+ if(!isIV){
+   document.getElementById('concLabel').textContent='Oral Liquid Concentration (mg / 5 mL)';
+   updateSyrupOptions();
+ }
+}
+document.getElementById('route').addEventListener('change',updateConcentrationFields);
+document.getElementById('aroute').addEventListener('change',updateConcentrationFields);
+document.getElementById('abx').addEventListener('change',function(){showAntibioticRange();updateSyrupOptions();updateDoseMode();updateConcentrationFields();});
+function syncDrugPicker(){
+  const sel=document.getElementById('abx');
+  const cat=patientType==='adult'?'adult':'pediatric';
+  document.querySelectorAll('.drug-option').forEach(btn=>{
+    const visible=btn.dataset.cat===cat;
+    btn.style.display=visible?'block':'none';
+    btn.classList.toggle('selected',btn.dataset.value===sel.value);
+  });
+}
+function selectDrugFromPicker(value){
+  const sel=document.getElementById('abx');
+  sel.value=value;
+  sel.dispatchEvent(new Event('change',{bubbles:true}));
+  syncDrugPicker();
+}
+document.querySelectorAll('.drug-cat').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.drug-cat').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    const cat=btn.dataset.cat;
+    document.querySelectorAll('.drug-option').forEach(x=>{
+      x.style.display=x.dataset.cat===cat?'block':'none';
+    });
+  });
+});
+document.querySelectorAll('.drug-option').forEach(btn=>{
+  btn.addEventListener('click',()=>selectDrugFromPicker(btn.dataset.value));
+});
+
+document.getElementById('analgesic').addEventListener('change',function(){});
+function switchType(t,btn){
+ type=t;
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
+ document.getElementById('abxBox').classList.toggle('hidden',t!=='abx');
+ document.getElementById('analgesicBox').classList.toggle('hidden',t!=='analgesic');
+}
+function toggleHealthFields(){
+ const h=document.getElementById('healthStatus').value;
+ document.getElementById('liverFields').classList.toggle('hidden',h!=='liver'&&h!=='both');
+ document.getElementById('kidneyFields').classList.toggle('hidden',h!=='kidney'&&h!=='both');
+ if(h==='liver'||h==='both'){
+   document.getElementById('renalMessage').textContent='وظائف الكلى غير مفعلة؛ إذا كان هناك قصور كلوي أيضًا اختر الكبد + الكلى.';
+ }
+}
+function healthSafetyNote(){
+  const h=document.getElementById('healthStatus').value;
+  let html='';
+  if(h==='liver'||h==='both'){
+    html+='<div class="hint warning" style="padding:10px;margin-top:10px;border-radius:12px">⚠ Hepatic impairment: no automatic dose reduction is applied. For IV amoxicillin/clavulanate, dose with caution and monitor hepatic function regularly. A history of jaundice/hepatic impairment caused by amoxicillin/clavulanate is a contraindication.</div>';
+  }
+  if(h==='kidney'||h==='both'){
+    const crcl=parseFloat(document.getElementById('crcl').value);
+    if(isNaN(crcl)){
+      html+='<div class="hint warning" style="padding:10px;margin-top:10px;border-radius:12px">⚠ Renal impairment selected: enter CrCl to apply the Augmentin IV renal interval.</div>';
+    }
+  }
+  return html;
+}
+
+function calculate(){
+  const w=parseFloat(document.getElementById('weight').value);
+  const d=parseFloat(document.getElementById('dose').value);
+  const unit=document.getElementById('unit').value;
+  const f=parseFloat(document.getElementById('freq').value)||1;
+  const presetVal=document.getElementById('concPreset').value;
+  const c=presetVal==='custom'?parseFloat(document.getElementById('conc').value):parseFloat(presetVal);
+  const r=document.getElementById('result');
+
+  if(!w||w<=0||!d||d<=0){
+    r.className='result warning';
+    r.innerHTML='Warning: Enter a valid weight and dose.';
+    return;
+  }
+
+  let mgDay,mgDose;
+  if(unit==='adultDose'){mgDose=d;mgDay=mgDose*f}
+  else if(unit==='adultDay'){mgDay=d;mgDose=mgDay/f}
+  else if(unit==='day'){mgDay=w*d;mgDose=mgDay/f}
+  else {mgDose=w*d;mgDay=mgDose*f}
+
+  const currentRoute = type==='abx'
+    ? document.getElementById('route').value
+    : document.getElementById('aroute').value;
+  const isAugmentinIV = patientType==='child' && type==='abx' && document.getElementById('abx').value==='amoxclav' && currentRoute==='IV';
+
+  const refOpt = type==='abx'
+    ? document.getElementById('abx').options[document.getElementById('abx').selectedIndex]
+    : document.getElementById('analgesic').options[document.getElementById('analgesic').selectedIndex];
+
+  const refRange = refOpt ? (refOpt.dataset.range || '') : '';
+  const refMax = refOpt ? (refOpt.dataset.max || '') : '';
+
+  /* Determine status from the selected reference. */
+  let status='warning';
+  let statusText='Warning: Verify the calculated dose against the appropriate drug reference before administration.';
+
+  if(isAugmentinIV){
+    const expectedDose=25;
+    const crcl=parseFloat(document.getElementById('crcl').value);
+    const hd=document.getElementById('hemodialysis').value==='yes';
+    let expectedFreq=3;
+    let regimenText='25 mg/kg/dose every 8 hours';
+
+    if(hd){
+      expectedFreq=1;
+      regimenText='25 mg/kg/dose every 24 hours + 12.5 mg/kg supplemental dose after hemodialysis';
+    }else if(!isNaN(crcl)){
+      if(crcl>30){ expectedFreq=3; regimenText='25 mg/kg/dose every 8 hours'; }
+      else if(crcl>=10){ expectedFreq=2; regimenText='25 mg/kg/dose every 12 hours'; }
+      else { expectedFreq=1; regimenText='25 mg/kg/dose every 24 hours'; }
+    }
+
+    const doseMatches=Math.abs(d-expectedDose)<0.0001 && Math.abs(f-expectedFreq)<0.0001 && unit==='dose';
+    status=(doseMatches && (!isNaN(crcl)||hd))?'safe':'warning';
+    statusText=(doseMatches && (!isNaN(crcl)||hd))
+      ? '✓ Dose matches the renal-adjusted IV reference: '+regimenText+'.'
+      : '⚠ Verify renal-adjusted regimen: '+regimenText+'. Enter CrCl or select hemodialysis before administration.';
+  } else if(refMax){
+    let exceeded=false, comparable=false;
+
+    // Maximum expressed as mg/kg/day
+    const dailyKgMatches=[...refMax.matchAll(/(\d+(?:\.\d+)?)\s*mg\/kg\/day/ig)];
+    if(dailyKgMatches.length){
+      const dailyLimits=dailyKgMatches.map(m=>parseFloat(m[1])*w);
+      comparable=true;
+      if(dailyLimits.some(limit=>mgDay>limit)) exceeded=true;
+    }
+
+    // Maximum expressed as mg/dose. If two limits are supplied for q8h/q12h,
+    // use the limit matching the entered frequency.
+    const doseMatches=[...refMax.matchAll(/(\d+(?:\.\d+)?)\s*mg\s*(?:per|\/)\s*dose/ig)];
+    if(doseMatches.length){
+      comparable=true;
+      let applicable=NaN;
+      if(doseMatches.length===1) applicable=parseFloat(doseMatches[0][1]);
+      else applicable=(f>=3)?parseFloat(doseMatches[0][1]):parseFloat(doseMatches[doseMatches.length-1][1]);
+      if(mgDose>applicable) exceeded=true;
+    }
+
+    if(comparable){
+      status=exceeded?'warning':'safe';
+      statusText=exceeded
+        ? 'Warning: Calculated dose exceeds the listed AAPD maximum.'
+        : '✓ Calculated dose is within the listed AAPD maximum.';
+    }
+  }
+
+  let html='<small>Calculation Result</small><div class="big">'+fmt(mgDose)+' mg / dose</div>';
+  html+='<div class="result-status">'+statusText+'</div>';
+  html+='<span class="chip">Total daily: '+fmt(mgDay)+' mg/day</span>';
+  html+='<span class="chip">Doses/day: '+f+'</span>';
+
+  if(refRange || refMax){
+    html+='<div class="dose-reference">';
+    html+='<div class="dose-reference-title">📋 '+(isAugmentinIV?'IV Product Reference Information':'AAPD Reference Information')+'</div>';
+    if(refRange) html+='<div><b>Recommended:</b> '+refRange+'</div>';
+    if(refMax && !isAugmentinIV) html+='<div><b>Maximum:</b> '+refMax+'</div>';
+    if(isAugmentinIV){
+  const crcl=parseFloat(document.getElementById('crcl').value);
+  const hd=document.getElementById('hemodialysis').value==='yes';
+  let renalRef='25 mg/5 mg per kg every 8 hours';
+  if(hd) renalRef='25 mg/5 mg per kg every 24 hours + 12.5 mg/2.5 mg per kg after hemodialysis';
+  else if(!isNaN(crcl) && crcl>=10 && crcl<=30) renalRef='25 mg/5 mg per kg every 12 hours';
+  else if(!isNaN(crcl) && crcl<10) renalRef='25 mg/5 mg per kg every 24 hours';
+  html+='<div><b>Recommended:</b> '+renalRef+'</div><div><b>Basis:</b> Amoxicillin component; interval adjusted by CrCl.</div>';
+}
+    html+='</div>';
+  }
+
+  if(currentRoute==='IV'){
+    const vialMg=parseFloat(document.getElementById('vialMg').value);
+    const vialVolume=parseFloat(document.getElementById('vialVolume').value);
+    if(vialMg>0 && vialVolume>0){
+      const mlDose=mgDose*vialVolume/vialMg;
+      const concentration=vialMg/vialVolume;
+      html+='<div style="margin-top:12px"><b>'+fmt(concentration)+' mg/mL</b> — '+(isAugmentinIV?'Amoxicillin component concentration':'Final solution concentration')+'</div>';
+      html+='<div style="margin-top:8px"><b>'+fmt(mlDose)+' mL</b> per IV dose <small>(from '+fmt(vialMg)+' mg vial; final volume '+fmt(vialVolume)+' mL)</small></div>';
+    }else{
+      html+='<div class="hint">Enter vial drug amount and final volume to calculate mL/dose.</div>';
+    }
+  }else if(c>0){
+    html+='<div style="margin-top:12px"><b>'+fmt(mgDose/c*5)+' mL</b> per dose <small>(based on '+c+' mg/5 mL)</small></div>';
+  }
+
+  html+=healthSafetyNote();
+  html+='<div class="hint">Calculation only. Before administration, verify the recommended dose, maximum dose or product-specific regimen, frequency, concentration, component basis, and appropriate drug reference.</div>';
+
+  r.className='result '+(status==='safe'?'result-safe':'result-warning');
+  r.innerHTML=html;
+}
+function fmt(n){return Number.isInteger(n)?n:n.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}
+updateDoseMode();
+updatePatientTheme();
+showAntibioticRange();
+updateSyrupOptions();
+updateConcentrationFields();
+syncDrugPicker();
+</script>
+
+<script>
+/*
+  Capture protection:
+  - Blocks common browser screenshot shortcuts and Print Screen key handling.
+  - Blocks context menu, copy/cut/select, drag and printing.
+  - Shows a protected overlay when the page loses visibility/focus.
+  NOTE: A normal HTML/JavaScript page cannot reliably detect or prevent
+  OS-level screenshots or screen recording. Real owner-only protection
+  requires a controlled native app/DRM or server-side access control.
+*/
+(function(){
+  const overlay=document.getElementById('captureProtection');
+
+  function showProtection(){
+    if(overlay){
+      overlay.style.display='flex';
+      overlay.setAttribute('aria-hidden','false');
+    }
+  }
+  function hideProtection(){
+    if(overlay){
+      overlay.style.display='none';
+      overlay.setAttribute('aria-hidden','true');
+    }
+  }
+
+  document.addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('copy',e=>e.preventDefault());
+  document.addEventListener('cut',e=>e.preventDefault());
+  document.addEventListener('dragstart',e=>e.preventDefault());
+  document.addEventListener('selectstart',e=>e.preventDefault());
+
+  document.addEventListener('keydown',function(e){
+    const k=(e.key||'').toLowerCase();
+
+    // Print Screen and common capture shortcuts
+    if(e.key==='PrintScreen' || e.key==='PrtSc' ||
+       (e.ctrlKey && e.key==='p') ||
+       (e.ctrlKey && e.shiftKey && ['s','i'].includes(k)) ||
+       (e.metaKey && e.shiftKey && ['3','4','5'].includes(k))){
+      e.preventDefault();
+      e.stopPropagation();
+      showProtection();
+      setTimeout(hideProtection,1400);
+      return false;
+    }
+
+    // Common developer-tools shortcuts
+    if(e.key==='F12' ||
+       (e.ctrlKey && e.shiftKey && ['j','c','k'].includes(k)) ||
+       (e.ctrlKey && e.key==='u')){
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  },true);
+
+  window.addEventListener('beforeprint',e=>showProtection());
+  window.addEventListener('afterprint',e=>hideProtection());
+
+  // Deter simple screen-capture workflows when the page is backgrounded.
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){
+      showProtection();
+    }else{
+      setTimeout(hideProtection,250);
+    }
+  });
+
+  window.addEventListener('blur',showProtection);
+  window.addEventListener('focus',()=>setTimeout(hideProtection,250));
+
+  hideProtection();
+})();
+</script>
+
+
+<script>
+const MEDIDOSE_ACTIVATION_KEY = 'medidose_permanent_activation_v1';
+
+function isMediDoseActivated(){
+  return localStorage.getItem(MEDIDOSE_ACTIVATION_KEY) === '1';
+}
+
+function activateMediDose(){
+  /*
+    Prototype activation only.
+    For a real $7 purchase, this function must be replaced by
+    Google Play Billing verification before setting the activation flag.
+  */
+  localStorage.setItem(MEDIDOSE_ACTIVATION_KEY,'1');
+  hideWelcomeScreen();
+}
+
+function hideWelcomeScreen(){
+  const screen=document.getElementById('welcomeScreen');
+  if(screen) screen.style.display='none';
+}
+
+function showWelcomeScreen(){
+  const screen=document.getElementById('welcomeScreen');
+  if(screen) screen.style.display='flex';
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  hideWelcomeScreen();
+});
+</script>
+
+
+<script>
+const PRF_REFERENCES = {
+  "A-PRF+": {
+    rpm:1300, time:8, rcf:"~200 g",
+    note:"Reference protocol: 1300 rpm for 8 min (~200 g). Verify the rotor radius and centrifuge model before use."
+  },
+  "A-PRF": {
+    rpm:1500, time:14, rcf:"~200 g",
+    note:"Reference protocol: 1500 rpm for 14 min (~200 g). Verify the rotor radius and centrifuge model before use."
+  },
+  "L-PRF": {
+    rpm:2700, time:12, rcf:"~400 g clot / ~650–700 g max",
+    note:"Reference protocol: 2700 rpm for 12 min. Reported RCF depends strongly on rotor geometry."
+  },
+  "i-PRF": {
+    rpm:700, time:3, rcf:"~60 g",
+    note:"Common i-PRF protocol: 700 rpm for 3 min. It is a liquid PRF protocol and is particularly sensitive to centrifuge/tube configuration."
+  },
+  "T-PRF": {
+    rpm:2800, time:12, rcf:"~400 g max",
+    note:"Reference protocol: 2800 rpm for 12 min using titanium tubes. Do not substitute tube type without checking the validated protocol."
+  },
+  "CGF": {
+    rpm:null, time:13, rcf:"Variable",
+    program:"2700 rpm × 2 min → 2400 rpm × 4 min → 2700 rpm × 4 min → 3000 rpm × 3 min",
+    note:"CGF is a programmed variable-speed cycle, not one fixed RPM. Total centrifugation time is 13 min."
+  },
+  "Alb-PRF": {
+    rpm:null, time:8, rcf:"~700 g",
+    program:"~700 g × 8 min, followed by albumin-gel heating/cooling steps",
+    note:"Alb-PRF protocols are described using RCF rather than a universal RPM; RPM must be calculated for the specific rotor. Additional albumin-gel processing is required."
+  },
+  "C-PRF": {
+    rpm:null, time:8, rcf:"~700 g",
+    program:"~700 g × 8 min",
+    note:"A consensus recommendation describes C-PRF at 700 g for 8 min. Some studies used 3000 g for 8 min, so the protocol must be matched to the intended method and centrifuge."
+  }
+};
+
+function updatePRFLock(){
+  const panel=document.getElementById('prfUnlocked');
+  if(panel) panel.classList.remove('hidden');
+}
+
+function calculatePRF(){
+  const type=document.querySelector('.prf-type.active')?.dataset.prf || 'A-PRF+';
+  const rpm=parseFloat(document.getElementById('prfRpm').value);
+  const radius=parseFloat(document.getElementById('prfRadius').value);
+  const volume=parseFloat(document.getElementById('prfBloodVolume').value);
+  const time=parseFloat(document.getElementById('prfTime').value);
+  const ref=PRF_REFERENCES[type];
+  const result=document.getElementById('prfResult');
+
+  let html='<b>'+type+'</b><br>';
+  html+='المرجع: <b>'+(ref.rpm ? ref.rpm+' RPM' : (ref.program || ref.rcf))+'</b>';
+  if(ref.time) html+=' × <b>'+ref.time+' min</b>';
+  if(ref.rcf) html+=' <span style="color:#718096">('+ref.rcf+')</span>';
+  html+='<br>';
+
+  if(!isNaN(rpm) && !isNaN(radius) && rpm>0 && radius>0){
+    const rcf=1.118e-5*radius*rpm*rpm;
+    html+='RCF المحسوبة من إدخالك: <b>'+rcf.toFixed(0)+' × g</b><br>';
+  }
+
+  if(!isNaN(volume) && volume>0) html+='حجم الدم: <b>'+volume+' mL</b><br>';
+  if(!isNaN(time) && time>0) html+='الزمن المدخل: <b>'+time+' min</b><br>';
+
+  if(ref.program) html+='<div style="margin-top:6px"><b>برنامج الطرد:</b> '+ref.program+'</div>';
+  html+='<div class="hint" style="margin-top:7px">'+ref.note+'</div>';
+  html+='<div class="hint" style="margin-top:7px">مهم: RPM ليس قيمة عالمية؛ نفس RPM قد يعطي RCF مختلفًا باختلاف نصف قطر الروتور. استخدم RCF والبروتوكول المعتمد لجهازك.</div>';
+
+  result.innerHTML=html;
+}
+
+function applyPRFReference(type){
+  const ref=PRF_REFERENCES[type];
+  const rpmEl=document.getElementById('prfRpm');
+  const timeEl=document.getElementById('prfTime');
+  if(rpmEl) rpmEl.value = ref?.rpm ?? '';
+  if(timeEl) timeEl.value = ref?.time ?? '';
+}
+
+document.querySelectorAll('.prf-type').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.prf-type').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    applyPRFReference(btn.dataset.prf);
+    calculatePRF();
+  });
+});
+
+document.addEventListener('DOMContentLoaded',()=>{ updatePRFLock(); applyPRFReference('A-PRF+'); calculatePRF(); });
+
+const oldActivateMediDose=window.activateMediDose;
+window.activateMediDose=function(){
+  if(typeof oldActivateMediDose==='function') oldActivateMediDose();
+  updatePRFLock();
+};
+</script>
+
+
+<div id="prfPage" class="prf-page">
+  <div class="prf-page-header">
+    <button type="button" class="prf-back" onclick="closePRFPage()">← حساب الجرعات</button>
+    <div class="section-title" style="margin:0">🧬 PRF Premium</div>
+  </div>
+  <section class="card premium-card" id="prfPremium">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <div class="section-title" style="margin:0">🧬 PRF Premium</div>
+    <span class="premium-badge">⭐ PREMIUM</span>
+  </div>
+  
+
+  <div id="prfUnlocked" class="hidden">
+    <div class="hint" style="margin-top:8px">
+      اختر النوع ثم أدخل بيانات جهاز الطرد المركزي لديك. الحاسبة تحسب RCF من RPM ونصف قطر الروتور، ولا تستبدل تعليمات الشركة المصنعة أو البروتوكول السريري المعتمد.
+    </div>
+
+    <div class="prf-types">
+      <button type="button" class="prf-type active" data-prf="A-PRF+">A-PRF+</button>
+      <button type="button" class="prf-type" data-prf="A-PRF">A-PRF</button>
+      <button type="button" class="prf-type" data-prf="L-PRF">L-PRF</button>
+      <button type="button" class="prf-type" data-prf="i-PRF">i-PRF</button>
+      <button type="button" class="prf-type" data-prf="T-PRF">T-PRF</button>
+      <button type="button" class="prf-type" data-prf="CGF">CGF</button>
+      <button type="button" class="prf-type" data-prf="Alb-PRF">Alb-PRF</button>
+      <button type="button" class="prf-type" data-prf="C-PRF">C-PRF</button>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div>
+        <label>Blood volume (mL)</label>
+        <input id="prfBloodVolume" type="number" min="0" step="0.1" placeholder="e.g. 10">
+      </div>
+      <div>
+        <label>RPM</label>
+        <input id="prfRpm" type="number" min="0" step="1" placeholder="Enter centrifuge RPM">
+      </div>
+      <div>
+        <label>Rotor radius (cm)</label>
+        <input id="prfRadius" type="number" min="0" step="0.1" placeholder="Enter radius">
+      </div>
+      <div>
+        <label>Spin time (min)</label>
+        <input id="prfTime" type="number" min="0" step="0.1" placeholder="Enter time">
+      </div>
+    </div>
+
+    <button class="calculate" type="button" onclick="calculatePRF()" style="margin-top:12px">حساب RCF ومراجعة PRF</button>
+    <div id="prfResult" class="prf-result">اختر نوع PRF وأدخل بيانات جهازك ثم اضغط حساب.</div>
+  </div>
+</section>
+</div>
+
+
+<div id="laPage" class="la-page">
+  <div class="la-page-header">
+    <button type="button" class="la-back" onclick="closeLocalAnesthesia()">← حساب الجرعات</button>
+    <div class="section-title" style="margin:0">💉 Local Anesthesia Calculator</div>
+  </div>
+
+  <section class="card premium-card">
+    <div class="premium-badge">⭐ PREMIUM</div>
+    <div class="hint" style="margin-top:8px">
+      احسب الجرعة القصوى النظرية للمخدر الموضعي حسب وزن المريض وتركيز المادة وعدد الـ cartridges.
+      النتائج مرجعية ويجب مطابقتها مع نشرة المنتج والبروتوكول المحلي.
+    </div>
+
+    <div class="la-grid" style="margin-top:12px">
+      <div>
+        <label>Local anesthetic</label>
+        <select id="laDrug">
+          <option value="lidocaine">Lidocaine 2%</option>
+          <option value="articaine">Articaine 4%</option>
+          <option value="mepivacaine">Mepivacaine 3%</option>
+          <option value="prilocaine">Prilocaine 4%</option>
+          <option value="bupivacaine">Bupivacaine 0.5%</option>
+        </select>
+      </div>
+      <div>
+        <label>Vasoconstrictor</label>
+        <select id="laVaso">
+          <option value="none">None</option>
+          <option value="epi_1_100000">Epinephrine 1:100,000</option>
+          <option value="epi_1_200000">Epinephrine 1:200,000</option>
+        </select>
+      </div>
+      <div>
+        <label>Patient weight (kg)</label>
+        <input id="laWeight" type="number" min="0" step="0.1" placeholder="e.g. 70">
+      </div>
+      <div>
+        <label>Cartridge volume (mL)</label>
+        <input id="laVolume" type="number" min="0" step="0.01" value="1.8">
+      </div>
+      <div>
+        <label>Number of cartridges</label>
+        <input id="laCartridges" type="number" min="0" step="1" placeholder="e.g. 2">
+      </div>
+      <div>
+        <label>Age group</label>
+        <select id="laAge">
+          <option value="adult">Adult</option>
+          <option value="pediatric">Pediatric</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="calculate" type="button" onclick="calculateLocalAnesthesia()" style="margin-top:12px">احسب الجرعة والـ cartridges</button>
+    <div id="laResult" class="la-result">أدخل وزن المريض واختر المخدر ثم اضغط حساب.</div>
+    <div class="la-alert">
+      ⚠️ هذه حاسبة مرجعية وليست وصفة علاجية. الحد الأقصى للجرعة قد يختلف حسب المنتج، العمر، الأمراض المصاحبة، وطريقة إعطاء المخدر. تحقق دائمًا من النشرة الرسمية والبروتوكول المحلي قبل الاستخدام.
+    </div>
+  </section>
+</div>
+
+
+<script>
+const LOCAL_ANESTHETICS = {
+  lidocaine:   {name:"Lidocaine 2%", concentration:20, maxMgKg:7, absoluteMg:500},
+  articaine:   {name:"Articaine 4%", concentration:40, maxMgKg:7, absoluteMg:500},
+  mepivacaine: {name:"Mepivacaine 3%", concentration:30, maxMgKg:6.6, absoluteMg:400},
+  prilocaine:  {name:"Prilocaine 4%", concentration:40, maxMgKg:8, absoluteMg:600},
+  bupivacaine: {name:"Bupivacaine 0.5%", concentration:5, maxMgKg:2, absoluteMg:90}
+};
+
+function openLocalAnesthesia(){
+  closePatientMenu();
+  document.querySelector('.main-content-view')?.classList.add('prf-hidden');
+  document.getElementById('prfPage')?.classList.remove('active');
+  document.getElementById('laPage')?.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function closeLocalAnesthesia(){
+  document.getElementById('laPage')?.classList.remove('active');
+  document.querySelector('.main-content-view')?.classList.remove('prf-hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function calculateLocalAnesthesia(){
+  const drug=LOCAL_ANESTHETICS[document.getElementById('laDrug').value];
+  const weight=parseFloat(document.getElementById('laWeight').value);
+  const volume=parseFloat(document.getElementById('laVolume').value);
+  const cartridges=parseFloat(document.getElementById('laCartridges').value);
+  const vaso=document.getElementById('laVaso').value;
+  const age=document.getElementById('laAge').value;
+  const result=document.getElementById('laResult');
+
+  if(!drug || !weight || weight<=0 || !volume || volume<=0){
+    result.innerHTML='يرجى إدخال وزن المريض وحجم الـ cartridge بشكل صحيح.';
+    return;
+  }
+
+  const mgPerCartridge=drug.concentration*volume;
+  const weightBasedMax=drug.maxMgKg*weight;
+  const maxMg=Math.min(weightBasedMax,drug.absoluteMg);
+  const maxCartridges=maxMg/mgPerCartridge;
+  const usedMg=(!isNaN(cartridges) && cartridges>=0) ? cartridges*mgPerCartridge : null;
+
+  let html='<b>'+drug.name+'</b><br>';
+  html+='المادة الفعالة لكل cartridge: <b>'+mgPerCartridge.toFixed(1)+' mg</b><br>';
+  html+='الحد النظري حسب الوزن: <b>'+weightBasedMax.toFixed(1)+' mg</b><br>';
+  html+='الحد المستخدم في الحاسبة: <b>'+maxMg.toFixed(1)+' mg</b><br>';
+  html+='الحد الأقصى النظري: <b>'+maxCartridges.toFixed(2)+' cartridges</b> ≈ <b>'+Math.floor(maxCartridges)+' كاملة</b><br>';
+
+  if(usedMg!==null){
+    const over=usedMg>maxMg;
+    html+='الجرعة المدخلة: <b>'+usedMg.toFixed(1)+' mg</b> ('+cartridges+' cartridges)<br>';
+    if(over) html+='<div class="la-alert">⚠️ الجرعة المدخلة تتجاوز الحد المحسوب في الحاسبة.</div>';
+    else html+='<div style="margin-top:7px">✓ الجرعة المدخلة ضمن الحد المحسوب.</div>';
+  }
+
+  if(age==='pediatric'){
+    html+='<div class="hint" style="margin-top:8px">في الأطفال لا تعتمد على هذه القيم وحدها؛ يجب استخدام الجرعة والحد الأقصى المعتمدين للمنتج والعمر/الوزن والحالة السريرية.</div>';
+  }
+  if(vaso!=='none'){
+    html+='<div class="hint" style="margin-top:8px">تم اختيار vasoconstrictor. يجب أيضًا تقييم الحد الأقصى للـepinephrine حسب الحالة الطبية والمنتج.</div>';
+  }
+
+  result.innerHTML=html;
+}
+</script>
+
+
+<script>
+function setBottomActive(name){document.querySelectorAll('.bottom-item').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));}
+function showHome(){document.getElementById('homeView')?.style.setProperty('display','block');document.getElementById('treatmentsView')?.classList.remove('active');document.getElementById('prfPage')?.classList.remove('active');document.getElementById('laPage')?.classList.remove('active');document.querySelector('.main-content-view')?.classList.remove('prf-hidden');closeMoreSheet();setBottomActive('home');window.scrollTo({top:0,behavior:'smooth'});}
+function showClinicalProtocols(){showHome();setTimeout(()=>{const p=document.querySelector('.home-panel');if(p)p.scrollIntoView({behavior:'smooth',block:'start'});},50);}
+function showTreatments(){document.getElementById('homeView')?.style.setProperty('display','none');document.getElementById('treatmentsView')?.classList.add('active');document.getElementById('prfPage')?.classList.remove('active');document.getElementById('laPage')?.classList.remove('active');document.querySelector('.main-content-view')?.classList.remove('prf-hidden');closeMoreSheet();setBottomActive('treatments');window.scrollTo({top:0,behavior:'smooth'});}
+function toggleMoreSheet(){const sheet=document.getElementById('moreSheet'),back=document.getElementById('moreSheetBackdrop');const open=sheet?.classList.toggle('open');back?.classList.toggle('open',!!open);sheet?.setAttribute('aria-hidden',open?'false':'true');setBottomActive(open?'more':'home');}
+function closeMoreSheet(){document.getElementById('moreSheet')?.classList.remove('open');document.getElementById('moreSheetBackdrop')?.classList.remove('open');document.getElementById('moreSheet')?.setAttribute('aria-hidden','true');}
+function openPatientRecordsFromMore(){closeMoreSheet();openPatientRecordsModal();}
+function openNewPatientFromMore(){closeMoreSheet();openNewPatientModal();}
+function showPremiumWelcome(){const w=document.getElementById('welcomeScreen');if(w)w.style.display='flex';}
+function showDentalTraumaComingSoon(){closeMoreSheet();alert('Dental Trauma Protocols ستكون ضمن التحديث القادم.');}
+function showAboutApp(){closeMoreSheet();alert('MediDose — دليل الجرعات والبروتوكولات السريرية لطب الأسنان.');}
+document.addEventListener('DOMContentLoaded',()=>showHome());
+</script>
+
+</body>
+</html>
+
+
+
+
+<script>
+const PATIENT_RECORDS_KEY = 'medidose_patient_records_v1';
+
+function getPatientRecords(){
+  try { return JSON.parse(localStorage.getItem(PATIENT_RECORDS_KEY) || '[]'); }
+  catch(e){ return []; }
+}
+
+function setPatientRecords(records){
+  localStorage.setItem(PATIENT_RECORDS_KEY, JSON.stringify(records));
+}
+
+function collectCurrentFormData(){
+  const data = {};
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if(!el.id) return;
+    if(el.id.startsWith('record')) return;
+    if(el.type === 'button' || el.type === 'submit') return;
+    data[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+  });
+  return data;
+}
+
+function saveCurrentPatientRecord(){
+  const patientId = document.getElementById('recordPatientId')?.value.trim();
+  if(!patientId){
+    alert('أدخل اسم أو رقم المريض أولًا.');
+    return;
+  }
+
+  const records = getPatientRecords();
+  const record = {
+    id: Date.now().toString(),
+    patientId,
+    date: document.getElementById('recordDate')?.value || new Date().toISOString().slice(0,10),
+    notes: document.getElementById('recordNotes')?.value.trim() || '',
+    savedAt: new Date().toISOString(),
+    formData: collectCurrentFormData()
+  };
+
+  records.unshift(record);
+  setPatientRecords(records);
+  refreshPatientRecords();
+  alert('تم حفظ بيانات المريض.');
+}
+
+function loadPatientRecord(recordId){
+  if(!recordId) return;
+  const record = getPatientRecords().find(r => r.id === recordId);
+  if(!record) return;
+
+  Object.entries(record.formData || {}).forEach(([id,value]) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(el.type === 'checkbox') el.checked = !!value;
+    else el.value = value;
+  });
+
+  const pid = document.getElementById('recordPatientId');
+  const date = document.getElementById('recordDate');
+  const notes = document.getElementById('recordNotes');
+  if(pid) pid.value = record.patientId || '';
+  if(date) date.value = record.date || '';
+  if(notes) notes.value = record.notes || '';
+
+  // Refresh visible calculator state if the original page exposes calculate().
+  try { if(typeof calculate === 'function') calculate(); } catch(e){}
+}
+
+function deletePatientRecord(recordId){
+  if(!confirm('حذف هذا السجل؟')) return;
+  setPatientRecords(getPatientRecords().filter(r => r.id !== recordId));
+  refreshPatientRecords();
+}
+
+function clearPatientRecordForm(){
+  const ids = ['recordPatientId','recordDate','recordNotes'];
+  ids.forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const sel=document.getElementById('savedPatientRecords');
+  if(sel) sel.value='';
+}
+
+function refreshPatientRecords(){
+  const records = getPatientRecords();
+  const sel = document.getElementById('savedPatientRecords');
+  const list = document.getElementById('patientRecordsList');
+  if(!sel || !list) return;
+
+  sel.innerHTML = '<option value="">— اختر مريضًا للمراجعة —</option>';
+  records.forEach(r => {
+    const opt=document.createElement('option');
+    opt.value=r.id;
+    opt.textContent=(r.patientId || 'Unnamed') + ' — ' + (r.date || '');
+    sel.appendChild(opt);
+  });
+
+  if(!records.length){
+    list.innerHTML='<div class="hint">لا توجد سجلات محفوظة.</div>';
+    return;
+  }
+
+  list.innerHTML = records.map(r => `
+    <div class="card" style="margin-top:8px;padding:10px">
+      <b>${escapeHtml(r.patientId)}</b> — ${escapeHtml(r.date || '')}
+      ${r.notes ? '<div class="hint">'+escapeHtml(r.notes)+'</div>' : ''}
+      <div style="margin-top:8px">
+        <button type="button" onclick="loadPatientRecord('${r.id}')">مراجعة</button>
+        <button type="button" onclick="deletePatientRecord('${r.id}')">حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[c]));
+}
+
+function getLocalToday(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function updateRecordDateAutomatically(){
+  const date=document.getElementById('recordDate');
+  if(date) date.value=getLocalToday();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateRecordDateAutomatically();
+  refreshPatientRecords();
+});
+
+// Keep the date current if the page remains open across midnight.
+setInterval(updateRecordDateAutomatically, 60000);
+</script>
